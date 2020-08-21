@@ -1,0 +1,126 @@
+---
+title: "Group_Project_Markdown"
+output: html_document
+---
+
+**Variable description**
+
+The following table will present the variables in the final datamart and a description of each of these:
+
+Variable Name  | Description
+-------------  | -------------
+UserID         | User ID was of each participant at time of registration assigned by bwin
+total_conv_amount   | The sum of poker chip transaction amount per User ID
+avg_conv_amount   | The average of poker chip transaction amount per User ID
+total_sell_amount   |The total amount sold per User ID
+total_buy_amount   | The total amount bought per User ID
+avg_timediff_hours   | The average time difference between conversions
+nr_conversions   | The number of poker chip transactions per User ID
+RegistrationDate   | Date of registration of each participant
+Age   | Participant's age
+FOTotalStakes   | Total stakes each participant betted on fixed-odds plays from February 1, 2005 through September 30, 2005
+FOTotalWinnings   | Total winnings each participant received on fixed-odds plays from February 1, 2005 through September 30, 2005
+FOTotalBets   | Total number of bets each participant betted on fixed-odds plays from February 1, 2005 through September 30, 2005
+FOFirstActiveDate   | First date of fixed-odds play of each participant from February 1, 2005 through September 30, 2005
+FOLastActiveDate   | Last date of fixed-odds play of each participant from February 1, 2005 through September 30, 2005
+FOTotalDaysActive   | Total days of active fixed-odds plays of each participant from February 1, 2005 through September 30, 2005
+LATotalStakes   | Total stakes each participant betted on live-action plays from February 1, 2005 through September 30, 2005
+LATotalWinnings   | Total winnings each participant received on live-action plays from February 1, 2005 through September 30, 2005
+LATotalBets   | Total number of bets each participant betted on live-action plays from February 1, 2005 through September 30, 2005
+LAFirstActiveDate   | First date of live-action play of each participant from February 1, 2005 through September 30, 2005
+LALastActiveDate   | Last date of live-action play of each participant from February 1, 2005 through September 30, 2005
+LATotalDaysActive   | Total days of active live-action plays of each participant from February 1, 2005 through September 30, 2005
+FirstSportsActiveDate   | First date of active sports book play for each participant from February 1, 2005 through September 30, 2005
+RegDate   | Date of registration
+FirstPay   | Participant’s first betting money deposits date
+FirstAct   | Participant’s first active play date
+First_time_sports   | Participant’s first sports book play date
+First_time_casino   | Participant’s first casino play date
+First_time_games   | Participant’s first games play date
+First_time_poker   | Participant’s first poker play date
+ApplicationID   | Different route of access to bwin (ID)
+avg_bet   | Average number of daily bets per participant
+min_bet   | Minimum number of bets made by a participant
+max_bet   | Maximum number of bets made by a participant
+total_number_bets   | Total number of bets the participant has made
+avg_winnings   | Average betting winnings per participant
+min_winnings   | Minimum betting winnings per participant
+max_winnings   | Maximum betting winnings per participant
+total_money_bets   |Total betting stakes per participant, in €
+min_money_bets   | Minimum betting stakes per participant, in €
+max_money_bets   | Maximum betting stakes per participant ,in €
+mean_money_bets   | Average betting stakes per participant ,in €
+Betted_Casino_boss   | Number of bets the participant made for this product category
+Betted_Casino_chartwell   | Number of bets the participant made for this product category
+Betted_Games_bwin   | Number of bets the participant made for this product category
+Betted_Games_VS   | Number of bets the participant made for this product category
+Betted_Sports_fixed_live   | Number of bets the participant made for this product category
+Betted_Sports_fixed_odd   |Number of bets the participant made for this product category
+Betted_Supertoto   | Number of bets the participant made for this product category
+Gender   | Participant's Gender (1: Female; 0: Male)
+Language   | Participant's language code
+Country   | Participant's country of residence code
+country_name   | Participant's country of residence name
+country   | Participant's country of residence abbreviation
+latitude   | Participant's country of residence latitude
+longitude   | Participant's country of residence longitude
+Continent_Name   | Participant's country of residence continent name
+Continent_Code   | Participant's country of residence continent code
+application_description   | Name of the different routes of access to bwin
+TotalDaysActive   | Number of days each participant was active
+gender_description   | Participant's gender
+LastActiveDate   | Last date each participant was active
+
+
+# Demographics charts
+
+**Gender chart**
+
+As the following graph shows, there are 39060 Male participants against 3588 Female participant, which are about 92% Male being active on Internet sports Betting. 
+
+```{r}
+# Gender Donut Chart
+library(readr)
+library(dplyr)
+library(ggplot2)
+datamart <- read_csv("C:/Users/fceli/Desktop/BIG DATA/7. Business Analytics Tools - Open Source/Group Assignment/Final files/R_Group_Assignment/datamart.csv")
+gender1 <- datamart%>% 
+  filter(is.na(gender_description)==FALSE) %>%
+  group_by(gender_description) %>% 
+  summarise(count_gender=n())
+# Add addition columns, needed for drawing with geom_rect.
+gender1$fraction = gender1$count_gender / sum(gender1$count_gender)
+gender1 = gender1[order(gender1$fraction), ]
+gender1$ymax = cumsum(gender1$fraction)
+gender1$ymin = c(0, head(gender1$ymax, n=-1))
+ggplot(gender1, aes(fill=gender_description, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
+     geom_rect(colour="grey30") +
+     coord_polar(theta="y") +
+     xlim(c(0, 4)) +
+     theme_bw() +
+     theme(panel.grid=element_blank()) +
+     theme(axis.text=element_blank()) +
+     theme(axis.ticks=element_blank()) +
+     labs(title="Gender")
+```
+
+
+**Number of users per country**
+
+The following graph represents the top 15 countries in terms of number of participants. Germany is by far the most represented country with 24000 users, followed by Turkey, Poland, Spain, Greece, France and Denmark. 
+```{r}
+#Country Chart
+clients <- datamart%>% 
+  group_by(country_name) %>% 
+  summarise(count_people=n())%>%
+  arrange(desc(count_people))%>%
+  slice(1:15)
+clients<-na.omit(clients)
+ggplot(clients, aes(x=reorder(country_name, -count_people), y=count_people, label=count_people)) + 
+  geom_bar(stat = "identity")+
+  scale_fill_manual("legend", values = "Blue")+#c("A" = "black", "B" = "orange", "C" = "blue"))+
+  geom_text(size=1, position=position_stack(vjust=0.5))+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  labs(title= "Number of users per country")
+```
+
